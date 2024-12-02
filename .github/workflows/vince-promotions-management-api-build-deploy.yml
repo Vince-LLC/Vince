@@ -1,0 +1,212 @@
+name: vince-promotions-management-api-build-deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sleep 30
+
+      - name: Compile
+        run: echo Hello, world of stocks!
+      - run: sleep 30
+
+      - name: Docker login
+        uses: azure/docker-login@v1
+#        with:
+#          login-server: acrvinceproduse2001.azurecr.io
+#          username: ${{ secrets.ACR_USERNAME }}
+#          password: ${{ secrets.ACR_PASSWORD }}
+      - run: sleep 30
+
+      - name: Build Docker image
+        run: |
+          docker build ./Source/Backend/vince-cart-management/ -t acrvinceproduse2001.azurecr.io/vincecartmanagement:${{ github.sha }}
+      - run: sleep 30
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Helm
+          path: ./Deploy/K8s/helm/backend-api
+      - run: sleep 30
+
+  deployDev:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    needs: [Build]
+#    if: success() && github.ref == 'refs/heads/Master'
+    environment: 
+      name: Development
+    steps:
+      - uses: actions/checkout@v3
+      - run: sleep 30
+
+      - name: Azure login
+        uses: azure/login@v1
+ #       with:
+ #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: sleep 30
+
+      - name: Get K8s context
+        uses: azure/aks-set-context@v3
+#        with:
+#          resource-group: ${{ secrets.RESOURCE_GROUP }}
+#          cluster-name: ${{ secrets.CLUSTER_NAME }}
+      - run: sleep 30
+
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2
+#        with:
+#          renderEngine: "helm"
+#          helmChart: ${{ secrets.CHART_PATH }}
+#          overrideFiles: ${{ secrets.CHART_OVERRIDE_PATH }}
+#          overrides: |
+#            replicas:2
+#          helm-version: "latest"
+#        id: bake
+      - run: sleep 30
+
+      - name: Deploy application
+        uses: azure/k8s-deploy@v4
+#        with:
+#          action: deploy
+#          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+#          images: |
+#            ${{ secrets.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ secrets.CONTAINER_NAME }}:${{ github.sha }}
+      - run: sleep 30
+
+  deployQA:
+    name: Deploy to QA
+    needs: [deployDev]
+    runs-on: ubuntu-latest
+    environment: 
+      name: QA
+    steps:
+      - uses: actions/checkout@v3
+      - run: sleep 30
+
+      - name: Azure login
+        uses: azure/login@v1
+ #       with:
+ #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: sleep 30
+
+      - name: Get K8s context
+        uses: azure/aks-set-context@v3
+#        with:
+#          resource-group: ${{ secrets.RESOURCE_GROUP }}
+#          cluster-name: ${{ secrets.CLUSTER_NAME }}
+      - run: sleep 30
+
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2
+#        with:
+#          renderEngine: "helm"
+#          helmChart: ${{ secrets.CHART_PATH }}
+#          overrideFiles: ${{ secrets.CHART_OVERRIDE_PATH }}
+#          overrides: |
+#            replicas:2
+#          helm-version: "latest"
+#        id: bake
+      - run: sleep 130
+
+      - name: Deploy application
+        uses: azure/k8s-deploy@v4
+#        with:
+#          action: deploy
+#          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+#          images: |
+#            ${{ secrets.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ secrets.CONTAINER_NAME }}:${{ github.sha }}
+      - run: sleep 30
+
+  deployUAT:
+    name: Deploy to UAT
+    needs: [deployQA]
+    runs-on: ubuntu-latest
+    environment: 
+     name: Staging
+    steps:
+      - uses: actions/checkout@v3
+      - run: sleep 70
+
+      - name: Azure login
+        uses: azure/login@v1
+#        with:
+#          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: sleep 50
+
+      - name: Get K8s context
+        uses: azure/aks-set-context@v3
+#        with:
+#          resource-group: ${{ secrets.RESOURCE_GROUP }}
+#          cluster-name: ${{ secrets.CLUSTER_NAME }}
+      - run: sleep 60
+
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2
+#        with:
+#          renderEngine: "helm"
+#          helmChart: ${{ secrets.CHART_PATH }}
+#          overrideFiles: ${{ secrets.CHART_OVERRIDE_PATH }}
+#          overrides: |
+#            replicas:2
+#          helm-version: "latest"
+#        id: bake
+      - run: sleep 90
+
+      - name: Deploy application
+        uses: azure/k8s-deploy@v4
+#        with:
+#          action: deploy
+#          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+#          images: |
+#            ${{ secrets.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ secrets.CONTAINER_NAME }}:${{ github.sha }}
+      - run: sleep 40
+
+  deployProd:
+    name: Deploy to Production
+    needs: [deployUAT]
+    runs-on: ubuntu-latest
+    environment: 
+      name: Production
+    steps:
+      - uses: actions/checkout@v3
+      - run: sleep 90
+
+      - name: Azure login
+        uses: azure/login@v1
+#        with:
+#          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: sleep 60
+
+      - name: Get K8s context
+        uses: azure/aks-set-context@v3
+#        with:
+#          resource-group: ${{ secrets.RESOURCE_GROUP }}
+#          cluster-name: ${{ secrets.CLUSTER_NAME }}
+      - run: sleep 130
+
+      - name: Bake deployment
+        uses: azure/k8s-bake@v2
+#        with:
+#          renderEngine: "helm"
+#          helmChart: ${{ secrets.CHART_PATH }}
+#          overrideFiles: ${{ secrets.CHART_OVERRIDE_PATH }}
+#          overrides: |
+#            replicas:2
+#          helm-version: "latest"
+#        id: bake
+      - run: sleep 230
+
+      - name: Deploy application
+        uses: azure/k8s-deploy@v4
+#        with:
+#          action: deploy
+#          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+#          images: |
+#           ${{ secrets.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ secrets.CONTAINER_NAME }}:${{ github.sha }}
+      - run: sleep 130
