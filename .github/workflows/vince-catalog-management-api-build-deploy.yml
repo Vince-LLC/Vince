@@ -2,9 +2,9 @@ name: vince-catalog-management-build-deploy
 
 on:
   # push:
-  #   branches: [ "Master" ]
+  #   branches: [ "main" ]
 #   pull_request:
-#     branches: [ "Master" ]
+#     branches: [ "main" ]
   workflow_dispatch:
 #
 

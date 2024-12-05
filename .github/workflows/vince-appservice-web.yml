@@ -33,9 +33,9 @@ env:
 
 on:
 #   push:
-#      branches: [ "Master" ]
+#      branches: [ "main" ]
 #   pull_request:
-#     branches: [ "Master" ]
+#     branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
