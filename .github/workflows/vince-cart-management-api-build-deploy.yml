@@ -28,7 +28,7 @@ jobs:
   #       docker push acrvinceproduse2001.azurecr.io/vincecartmanagement:${{ github.sha }}
           
       - name: Archive artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.4.3
         with:
           name: Helm
           path: |
